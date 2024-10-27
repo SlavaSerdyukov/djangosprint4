@@ -94,7 +94,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    BASE_DIR / "static",
+    "D:/Dev/django_sprint4-main/blogicum/static",
 ]
 
 MEDIA_URL = '/media/'
