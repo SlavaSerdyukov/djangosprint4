@@ -1,12 +1,13 @@
-from blog.constants import POSTS_ON_PAGE
-from blog.forms import CommentForm, PostForm, ProfileEditForm
-from blog.models import Category, Comment, Post, User
-from blog.service import get_paginator, get_posts
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+
+from blog.constants import POSTS_ON_PAGE
+from blog.forms import CommentForm, PostForm, ProfileEditForm
+from blog.models import Category, Comment, Post, User
+from blog.service import get_paginator, get_posts
 
 
 def index(request):
@@ -59,7 +60,6 @@ def profile(request, username):
     posts_list = user.posts.all().select_related(
         "location", "category").prefetch_related("comments")
 
-    # Считаем количество комментариев для каждого поста
     for post in posts_list:
         post.comment_count = post.comments.count()
 
@@ -68,10 +68,9 @@ def profile(request, username):
     context = {
         'profile': user,
         'page_obj': page_obj,
-        'comment_count': sum(post.comment_count for post in posts_list)  # Общее количество комментариев
+        'comment_count': sum(post.comment_count for post in posts_list)
     }
     return render(request, 'blog/profile.html', context)
-
 
 
 @login_required

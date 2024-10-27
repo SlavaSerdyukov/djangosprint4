@@ -20,7 +20,6 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ('is_published', 'created_at')
 
 
-
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     """Админка для комментариев."""
