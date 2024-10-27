@@ -1,10 +1,6 @@
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 
-from blog.constants import POSTS_ON_PAGE
 from blog.forms import CommentForm, PostForm, ProfileEditForm
 from blog.models import Category, Comment, Post, User
 from blog.service import get_paginator, get_posts
