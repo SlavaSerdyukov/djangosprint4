@@ -1,17 +1,18 @@
 from blog.constants import REPRESENTATION_LENGTH, TITLE_FIELD_LENGTH
-from core.models import BaseBlogModel
+from core.models import PublishableModel
 from django.contrib.auth import get_user_model
 from django.db import models
 
 User = get_user_model()
 
 
-class Category(BaseBlogModel):
+class Category(PublishableModel):
     """Категория"""
 
     title = models.CharField(
         'Заголовок',
-        max_length=TITLE_FIELD_LENGTH)
+        max_length=TITLE_FIELD_LENGTH
+    )
     description = models.TextField('Описание')
     slug = models.SlugField(
         'Идентификатор',
@@ -22,7 +23,7 @@ class Category(BaseBlogModel):
         unique=True
     )
 
-    class Meta(BaseBlogModel.Meta):
+    class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
@@ -30,7 +31,7 @@ class Category(BaseBlogModel):
         return self.title[:REPRESENTATION_LENGTH]
 
 
-class Location(BaseBlogModel):
+class Location(PublishableModel):
     """Местоположение"""
 
     name = models.CharField(
@@ -38,7 +39,7 @@ class Location(BaseBlogModel):
         max_length=TITLE_FIELD_LENGTH
     )
 
-    class Meta(BaseBlogModel.Meta):
+    class Meta:
         verbose_name = 'местоположение'
         verbose_name_plural = 'Местоположения'
 
@@ -46,12 +47,13 @@ class Location(BaseBlogModel):
         return self.name[:REPRESENTATION_LENGTH]
 
 
-class Post(BaseBlogModel):
+class Post(PublishableModel):
     """Публикация"""
 
     title = models.CharField(
         'Заголовок',
-        max_length=TITLE_FIELD_LENGTH)
+        max_length=TITLE_FIELD_LENGTH
+    )
     text = models.TextField('Текст')
     pub_date = models.DateTimeField(
         'Дата и время публикации',
@@ -66,13 +68,15 @@ class Post(BaseBlogModel):
         verbose_name='Автор публикации',
     )
     category = models.ForeignKey(
-        Category, null=True,
+        Category,
+        null=True,
         on_delete=models.SET_NULL,
         verbose_name='Категория',
     )
     location = models.ForeignKey(
         Location,
-        blank=True, null=True,
+        blank=True,
+        null=True,
         on_delete=models.SET_NULL,
         verbose_name='Местоположение',
     )
@@ -82,7 +86,7 @@ class Post(BaseBlogModel):
         blank=True
     )
 
-    class Meta(BaseBlogModel.Meta):
+    class Meta:
         default_related_name = 'posts'
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
@@ -92,24 +96,23 @@ class Post(BaseBlogModel):
         return self.title[:REPRESENTATION_LENGTH]
 
 
-class Comment(BaseBlogModel):
+class Comment(PublishableModel):
     """Комментарий"""
 
     text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор',
-        related_name='comments'
+        verbose_name='Автор'
     )
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        verbose_name='Комментарий',
-        related_name='comments'
+        verbose_name='Комментарий'
     )
 
-    class Meta(BaseBlogModel.Meta):
+    class Meta:
+        default_related_name = 'comments'
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарий'
 

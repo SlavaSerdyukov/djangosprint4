@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class BaseBlogModel(models.Model):
+class PublishableModel(models.Model):
     is_published = models.BooleanField(
         'Опубликовано',
         default=True,
