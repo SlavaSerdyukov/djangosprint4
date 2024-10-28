@@ -1,13 +1,14 @@
-from blog.constants import REPRESENTATION_LENGTH, TITLE_FIELD_LENGTH
-from core.models import PublishableModel
 from django.contrib.auth import get_user_model
 from django.db import models
+
+from blog.constants import REPRESENTATION_LENGTH, TITLE_FIELD_LENGTH
+from core.models import PublishableModel
 
 User = get_user_model()
 
 
 class Category(PublishableModel):
-    """Категория"""
+    """Категория."""
 
     title = models.CharField(
         'Заголовок',
@@ -32,7 +33,7 @@ class Category(PublishableModel):
 
 
 class Location(PublishableModel):
-    """Местоположение"""
+    """Местоположение."""
 
     name = models.CharField(
         'Название места',
@@ -48,7 +49,7 @@ class Location(PublishableModel):
 
 
 class Post(PublishableModel):
-    """Публикация"""
+    """Публикация."""
 
     title = models.CharField(
         'Заголовок',
@@ -81,7 +82,7 @@ class Post(PublishableModel):
         verbose_name='Местоположение',
     )
     image = models.ImageField(
-        'Изображание',
+        'Изображение',
         upload_to='posts_images',
         blank=True
     )
@@ -97,7 +98,7 @@ class Post(PublishableModel):
 
 
 class Comment(PublishableModel):
-    """Комментарий"""
+    """Комментарий."""
 
     text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(

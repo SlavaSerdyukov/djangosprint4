@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db import models
+from django.utils import timezone
 
 from blog.forms import CommentForm, PostForm, ProfileEditForm
 from blog.models import Category, Comment, Post, User
@@ -8,7 +10,8 @@ from blog.service import get_paginator, get_posts
 
 def index(request):
     """Главная страница."""
-    post_list = get_posts(Post.objects).order_by('-pub_date')
+    post_list = get_posts(Post.objects.select_related(
+        'author', 'category', 'location')).order_by('-pub_date')
     page_obj = get_paginator(request, post_list)
     context = {'page_obj': page_obj}
     return render(request, 'blog/index.html', context)
@@ -16,12 +19,12 @@ def index(request):
 
 def post_detail(request, post_id):
     """Полное описание выбранной записи."""
-    posts = get_object_or_404(Post, id=post_id)
-    if request.user != posts.author:
-        posts = get_object_or_404(get_posts(Post.objects), id=post_id)
-    comments = posts.comments.select_related('author')
+    post = get_object_or_404(Post, id=post_id)
+    if request.user != post.author:
+        post = get_object_or_404(get_posts(Post.objects), id=post_id)
+    comments = post.comments.select_related('author')
     form = CommentForm()
-    context = {'post': posts, 'form': form, 'comments': comments}
+    context = {'post': post, 'form': form, 'comments': comments}
     return render(request, 'blog/detail.html', context)
 
 
@@ -29,8 +32,8 @@ def category_posts(request, category_slug):
     """Публикация категории."""
     category = get_object_or_404(
         Category, slug=category_slug, is_published=True)
-    post_list = get_posts(category.posts).order_by(
-        '-pub_date').select_related('author', 'location')
+    post_list = get_posts(category.posts.select_related(
+        'author', 'location', 'category')).order_by('-pub_date')
     page_obj = get_paginator(request, post_list)
     context = {'category': category, 'page_obj': page_obj}
     return render(request, 'blog/category.html', context)
@@ -53,18 +56,18 @@ def profile(request, username):
     """Возвращает профиль пользователя."""
     user = get_object_or_404(User, username=username)
 
-    posts_list = user.posts.all().select_related(
-        "location", "category").prefetch_related("comments")
+    posts_list = user.posts.select_related("author", "location", "category").annotate(
+        comment_count=models.Count('comments'))
+    if request.user != user:
+        posts_list = posts_list.filter(
+            is_published=True, pub_date__lte=timezone.now())
 
-    for post in posts_list:
-        post.comment_count = post.comments.count()
+    posts_list = posts_list.order_by('-pub_date')
 
     page_obj = get_paginator(request, posts_list)
-
     context = {
         'profile': user,
         'page_obj': page_obj,
-        'comment_count': sum(post.comment_count for post in posts_list)
     }
     return render(request, 'blog/profile.html', context)
 
