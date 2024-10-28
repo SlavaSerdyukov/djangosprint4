@@ -56,11 +56,15 @@ def profile(request, username):
     """Возвращает профиль пользователя."""
     user = get_object_or_404(User, username=username)
 
-    posts_list = user.posts.select_related("author", "location", "category").annotate(
-        comment_count=models.Count('comments'))
+    posts_list = (
+        user.posts.select_related("author", "location", "category")
+        .annotate(comment_count=models.Count('comments'))
+    )
+    
     if request.user != user:
         posts_list = posts_list.filter(
-            is_published=True, pub_date__lte=timezone.now())
+            is_published=True, pub_date__lte=timezone.now()
+        )
 
     posts_list = posts_list.order_by('-pub_date')
 
@@ -69,7 +73,9 @@ def profile(request, username):
         'profile': user,
         'page_obj': page_obj,
     }
+    
     return render(request, 'blog/profile.html', context)
+
 
 
 @login_required
