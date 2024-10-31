@@ -9,7 +9,6 @@ def get_posts(
     is_published_only=True, allow_unpublished=False
 ):
     """Получает и возвращает посты из БД."""
-
     if is_published_only:
         post_objects = post_objects.filter(
             pub_date__lte=timezone.now(),

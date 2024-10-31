@@ -1,11 +1,13 @@
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.db import models
 from django.utils import timezone
+from django.db import models
 
 from blog.forms import CommentForm, PostForm, ProfileEditForm
 from blog.models import Category, Comment, Post, User
 from blog.service import get_paginator, get_posts
+
 
 
 def index(request):
@@ -21,7 +23,8 @@ def post_detail(request, post_id):
     """Полное описание выбранной записи."""
     post = get_object_or_404(Post, id=post_id)
     if request.user != post.author:
-        post = get_object_or_404(get_posts(Post.objects), id=post_id)
+        if post.pub_date > timezone.now() or not post.is_published:
+            raise Http404("Post not found")
     comments = post.comments.select_related('author')
     form = CommentForm()
     context = {'post': post, 'form': form, 'comments': comments}
