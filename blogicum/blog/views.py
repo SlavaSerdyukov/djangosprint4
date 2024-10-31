@@ -10,8 +10,8 @@ from blog.service import get_paginator, get_posts
 
 def index(request):
     """Главная страница."""
-    post_list = get_posts(Post.objects.select_related(
-        'author', 'category', 'location')).order_by('-pub_date')
+    post_list = get_posts(
+        Post.objects, is_published_only=True, count_comments=True)
     page_obj = get_paginator(request, post_list)
     context = {'page_obj': page_obj}
     return render(request, 'blog/index.html', context)
@@ -32,8 +32,7 @@ def category_posts(request, category_slug):
     """Публикация категории."""
     category = get_object_or_404(
         Category, slug=category_slug, is_published=True)
-    post_list = get_posts(category.posts.select_related(
-        'author', 'location', 'category')).order_by('-pub_date')
+    post_list = get_posts(category.posts, is_published_only=True)
     page_obj = get_paginator(request, post_list)
     context = {'category': category, 'page_obj': page_obj}
     return render(request, 'blog/category.html', context)
@@ -55,22 +54,10 @@ def create_post(request):
 def profile(request, username):
     """Возвращает профиль пользователя."""
     user = get_object_or_404(User, username=username)
-    posts_list = user.posts.select_related(
-        "author", "location", "category"
-    ).annotate(comment_count=models.Count('comments'))
-
-    if request.user != user:
-        posts_list = posts_list.filter(
-            is_published=True, pub_date__lte=timezone.now()
-        )
-
-    posts_list = posts_list.order_by('-pub_date')
-
+    posts_list = get_posts(user.posts, count_comments=True,
+                           is_published_only=request.user != user)
     page_obj = get_paginator(request, posts_list)
-    context = {
-        'profile': user,
-        'page_obj': page_obj,
-    }
+    context = {'profile': user, 'page_obj': page_obj}
     return render(request, 'blog/profile.html', context)
 
 
