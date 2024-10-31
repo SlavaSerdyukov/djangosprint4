@@ -2,12 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.db import models
 
 from blog.forms import CommentForm, PostForm, ProfileEditForm
 from blog.models import Category, Comment, Post, User
 from blog.service import get_paginator, get_posts
-
 
 
 def index(request):
