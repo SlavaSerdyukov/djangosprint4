@@ -26,7 +26,11 @@ def get_posts(
             comment_count=Count('comments')
         )
 
-    return post_objects.order_by('-pub_date')
+    return (
+        post_objects
+        .select_related('category', 'author')
+        .order_by('-pub_date')
+    )
 
 
 def get_paginator(request, items, num=POSTS_ON_PAGE):

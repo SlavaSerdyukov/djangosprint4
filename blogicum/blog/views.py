@@ -10,8 +10,7 @@ from blog.service import get_paginator, get_posts
 
 def index(request):
     """Главная страница."""
-    post_list = get_posts(
-        Post.objects, is_published_only=True, count_comments=True)
+    post_list = get_posts(Post.objects, count_comments=True)
     page_obj = get_paginator(request, post_list)
     context = {'page_obj': page_obj}
     return render(request, 'blog/index.html', context)
@@ -19,10 +18,15 @@ def index(request):
 
 def post_detail(request, post_id):
     """Полное описание выбранной записи."""
-    post = get_object_or_404(Post, id=post_id)
-    if request.user != post.author:
-        if post.pub_date > timezone.now() or not post.is_published:
-            raise Http404("Post not found")
+    if request.user.is_authenticated:
+        post = get_object_or_404(Post.objects, id=post_id)
+    else:
+        post = get_object_or_404(get_posts(Post.objects), id=post_id)
+    if (
+        request.user != post.author
+        and (post.pub_date > timezone.now() or not post.is_published)
+    ):
+        raise Http404("Post not found")
     comments = post.comments.select_related('author')
     form = CommentForm()
     context = {'post': post, 'form': form, 'comments': comments}
@@ -33,7 +37,7 @@ def category_posts(request, category_slug):
     """Публикация категории."""
     category = get_object_or_404(
         Category, slug=category_slug, is_published=True)
-    post_list = get_posts(category.posts, is_published_only=True)
+    post_list = get_posts(category.posts, count_comments=True)
     page_obj = get_paginator(request, post_list)
     context = {'category': category, 'page_obj': page_obj}
     return render(request, 'blog/category.html', context)
